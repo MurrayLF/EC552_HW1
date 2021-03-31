@@ -80,9 +80,9 @@ for signal_set in signal_pairing:
     q.reset_input_signals()
 
 #Output best score for modified input
-print(best_score)
+print("New best score: ",best_score)
 
 #Caclulate and output delta
 if eval:
     delta = best_score - del_best_score    
-    print(delta)
+    print("Delta: ",delta)

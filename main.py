@@ -1,5 +1,5 @@
 import os
-#from optimizeInput import *
+from optimizeInput import *
 from itertools import combinations
 from celloapi2 import CelloQuery, CelloResult
 
@@ -17,18 +17,9 @@ v_file = 'and.v'
 options = 'options.csv'
 input_sensor_file = f'{chassis_name}.input.json'
 output_device_file = f'{chassis_name}.output.json'
-q = CelloQuery(
-    input_directory=in_dir,
-    output_directory=out_dir,
-    verilog_file=v_file,
-    compiler_options=options,
-    input_ucf=in_ucf,
-    input_sensors=input_sensor_file,
-    output_device=output_device_file,
-)
 
 #Determine best score for unmodified input for calculation of delta
-eval=False
+eval=True
 if eval:
     del_best_score
     
@@ -59,10 +50,24 @@ if eval:
     delres = CelloResults(result_dir=out_dir)
 
 #Perform calculations and modify input file
-
+input_class_list = get_input_models_in_class(input_sensor_file)
+gate_class_list = get_file_gate_models_in_class(in_ucf)
+modified_input_class_list = compute_optimal_parameters(input_class_list,gate_class_list)
+NEWinput_sensor_file = f'{chassis_name}.NEWinput.json'
+save_input_class_in_file(modified_input_calss_list,input_sensor_file,NEWinput_sensor_file)
 
 #Calculate best score for modified input
 best_score=0
+
+q = CelloQuery(
+    input_directory=in_dir,
+    output_directory=out_dir,
+    verilog_file=v_file,
+    compiler_options=options,
+    input_ucf=in_ucf,
+    input_sensors=NEWinput_sensor_file,
+    output_device=output_device_file,
+)
 signals = q.get_input_signals()
 signal_pairing = list(combinations(signals, signal_input))
 for signal_set in signal_pairing:

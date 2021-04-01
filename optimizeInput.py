@@ -35,9 +35,13 @@ class Repressor:
 
     Attributes:
         name: Name of the repressor
+        
         ymax: The output value when expressing digital 1
+        
         ymin: The output value when expressing digital 0
+        
         K: The K_d of the response function
+        
         n: The slope of the response function
     """
     
@@ -67,7 +71,7 @@ class Repressor:
 
         Returns
         -------
-        If truth_table is set to True:
+        **If truth_table is set to True:
         Dict
             A Dict that containts the following:
             
@@ -77,7 +81,7 @@ class Repressor:
             
             Key 'score': The computed score of the NOT gate given the input, stored as a float.
             
-        If truth_table is set to False:
+        **If truth_table is set to False:
         Float
             The computed score of the NOT gate given the input.
         """
@@ -119,13 +123,13 @@ class Repressor:
 
         Returns
         -------
-        If truth_table is set to True:
+        **If truth_table is set to True:
         List           
             A list containing the output states of the NOR gate for each input state.
             The decimal value of the index represents the binary value of the input.
             Ex: tt[2] -> NOR output when input_obj1 is high and input_obj is low, or binary '10'
                        
-        If truth_table is set to False:
+        **If truth_table is set to False:
         Float
             The computed score of the NOR gate given the input.
 
@@ -345,10 +349,15 @@ class Input:
 
     Attributes:
         name: Name of the input
+        
         ymax: The output value when expressing digital 1
+        
         ymin: The output value when expressing digital 0
-        __ymax_og: The initial value of ymax. Remains unchanged
-        __ymin_og: The initial value of ymin. Remains unchanged
+        
+        __ymax_og: The initial value of ymax. Remains unchanged after instantiation
+        
+        __ymin_og: The initial value of ymin. Remains unchanged after instantiation
+        
     """
     
     def __init__(self,name, ymax, ymin):
@@ -476,34 +485,44 @@ def get_file_gate_models_in_class(filename):
 
 def save_input_class_in_file(input_class_list, original_input_file, new_input_file):
     """
+    Stores a list of Input class instances in the format of a cello-readable
+    input.json file.
     
+    Creates a file by copying a reference file, then modifying the file copy with
+    the given Input class list's parameters.
 
     Parameters
     ----------
-    input_class_list : TYPE
-        DESCRIPTION.
-    original_input_file : TYPE
-        DESCRIPTION.
-    new_input_file : TYPE
-        DESCRIPTION.
+    input_class_list : List of Input objects
+        List of Input objects representing the input promoters.
+    original_input_file : Path string
+        Filename/path of the original input file.
+    new_input_file : Path string
+        Filename/path of the newly created input file.
 
     Returns
     -------
     None.
 
     """
+    # Converts relative paths to absolute paths
     if not os.path.isabs(original_input_file):
         current_path = os.getcwd()
         original_input_file = os.path.join(current_path, original_input_file)
     if not os.path.isabs(new_input_file):
         current_path = os.getcwd()
         new_input_file = os.path.join(current_path, new_input_file)
+    
+    # Creates copy of reference file
     copyfile(original_input_file, new_input_file)
     
+    # Creates JSON structure from new file
     with open(new_input_file, "r") as f:
         data = json.load(f)
     f.close()
     
+    # Finds the corresponding input models, and replaces their parameters
+    # with those in the Input class list
     name_list = [input_obj.name for input_obj in input_class_list]
     for i,obj in enumerate(data):
         if obj['collection'] == "models":
@@ -515,6 +534,7 @@ def save_input_class_in_file(input_class_list, original_input_file, new_input_fi
                 if param['name'] == "ymin":
                     data[i]['parameters'][j]['value'] = curr_input.ymin
     
+    # Writes modifications to specified file
     with open(new_input_file,"w") as f:
         json.dump(data, f, indent="\t")
     f.close()
@@ -540,53 +560,75 @@ def get_avg_scoreNOR(input_obj1,input_obj2, gate_class_list):
 
 def compute_optimal_parameters(input_class_list, gate_class_list):
     """
-    
+    Calculates the optimal input scaling parameters through a gradient ascent-based
+    score maximization algorithm.
+
+    The score is modeled as a weighted average of the average score across all
+    gates for a given input passed into a NOT gate, and a NOR gate with all of
+    the other inputs. The gradient with respect to the input's scaling parameter
+    is then computed, and this value is maximized wrt average score
+    via gradient ascent. 
 
     Parameters
     ----------
-    input_class_list : TYPE
-        DESCRIPTION.
-    gate_class_list : TYPE
-        DESCRIPTION.
+    input_class_list : List of Input objects
+        List of Input objects representing the input promoters.
+    gate_class_list : List of Repressor objects
+        List of Repressor objects representing the biological gates available.
 
     Returns
     -------
-    input_mod_list : TYPE
-        DESCRIPTION.
+    input_mod_list : List of Input objects
+        Modifed list of Input objects that has the optimal scaling to the input's parameters.
 
     """
     
+    # Creates a separate list to be modified once optimal paramters are calculated
     input_mod_list = copy.deepcopy(input_class_list)
     
+    # Creates an empty data frame to store the results of optimzation
     df = pd.DataFrame(columns=['input','factor', 'not_score','delta_not','nor_score','delta_nor'])
+    
+    # Sets the weights for the weighted average score calculation based on the total number of inputs
     NOT_weight = 1/len(input_class_list)
     NOR_weight = (1-NOT_weight)/(len(input_class_list)-1)
+    
+    
     for input_obj in input_class_list:
+        # Gets the other inputs in the list for computing the NOR gradient later
         input_obj_loc = input_class_list.index(input_obj)
         remaining_inputs = copy.deepcopy(input_class_list[:input_obj_loc] + input_class_list[input_obj_loc+1:])
+        # Sets the inital scaling paramter. This is the paramter to be optimized
         factor = 0.01 
         input_obj.reset()
+        ## Gradient ascent with 1000 iterations
         for i in range(0,1000):
             grad_NOT_list = []
             grad_NOR_list = []
+            # Creates list of gradients for each gate
             for gate in gate_class_list:
                 grad_NOT_list.append(gate.gradNOT(input_obj,factor))
                 nor_list = []
                 for inp in remaining_inputs:
                     nor_list.append(gate.gradNOR(input_obj, inp, [factor, 1])[0])
                 grad_NOR_list.append(nor_list)
+            # Averages the gradient lists across all gates
             grad_NOR_list = np.array(grad_NOR_list)
             grad_NOT = np.array(grad_NOT_list).mean()
             grad_NOR_avgs = grad_NOR_list.mean(axis=0)
+            # Computes the weighted average of gradient averages
             weighted_grad = 0
             for avg in grad_NOR_avgs:
                 weighted_grad = weighted_grad + NOR_weight*avg
             weighted_grad = weighted_grad + NOT_weight*grad_NOT
+            # Update factor, and ensure factor is positive
             factor = factor + 0.51*weighted_grad
             if factor <= 0:
                 factor = 0.00000001
+        ## Evaluate calculated best factor
         best_factor = factor
         input_obj.reset()
+        # Computes baseline score for NOT and NOR gates
         baseline_NOT = get_avg_scoreNOT(input_obj, gate_class_list)
         baseline_NOR_list = []
         for inp in remaining_inputs:
@@ -597,15 +639,17 @@ def compute_optimal_parameters(input_class_list, gate_class_list):
             input_obj.weak_p(1/best_factor)
         else:
             input_obj.strong_p(best_factor)
+        # Computes new score for NOT and NOR gates
         avg_NOT_score = get_avg_scoreNOT(input_obj, gate_class_list)
         avg_NOR_score_list = []
         for inp in remaining_inputs:
             avg_NOR_score_list.append(get_avg_scoreNOR(input_obj, inp, gate_class_list))
         avg_NOR_score = np.array(avg_NOR_score_list).mean()
+        # Appends results in dataframe
         df_entry = [[input_obj.name, best_factor, avg_NOT_score,avg_NOT_score-baseline_NOT, avg_NOR_score,avg_NOR_score-baseline_NOR]]
         tdf = pd.DataFrame(df_entry, columns=['input','factor', 'not_score','delta_not','nor_score','delta_nor'])
         df = df.append(tdf)
-    
+    # Generate modified input class list
     for i,input_obj in enumerate(input_mod_list):
         factor = df.loc[df.input==input_obj.name].factor.values[0]
         if factor < 1:

@@ -9,8 +9,8 @@ Tool for modifying User Constraints File for improved genetic circuit design
 4. .output.json : A JSON representation of the Library used by Cello, representing the output of the genetic circuit.
 
 **Outputs:**
-1. The Score : The new score of the circuit
-2. The Delta : Difference between the new and old scores of the circuit
+1. Score : The new score of the circuit
+2. Delta : Difference between the new and old scores of the circuit
 3. .NEWinput.json : The modified input file.
 
 # Installing

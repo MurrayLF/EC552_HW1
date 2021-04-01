@@ -13,6 +13,6 @@ Outputs:
 2. *.UCF.json : The modified UCF file.
 
 
-If they are not already install, install the [celloapi2](https://github.com/CIDARLAB/celloapi2) and NumPy packages
+If they are not already install, install the [celloapi2](https://github.com/CIDARLAB/celloapi2) and [NumPy](https://numpy.org/) packages
 
 

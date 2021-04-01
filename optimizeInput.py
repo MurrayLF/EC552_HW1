@@ -1,19 +1,31 @@
 # -*- coding: utf-8 -*-
-
 """
 EC 552 HW1
-Anirudh Watturkar, Liam Murray
+@authors: Anirudh Watturkar, Liam Murray
 
-All the functions necessary to interpret, optimize, and write an input file for cello.
+Functions necessary to interpret, optimize, and write an input file for cello.
 
 This module contains classes to represent biological repressors and input promoters,
 provides tools to parse input and ucf files containing this formation, provides a function
 to optimize the input file, and provides a function to write the modified inputs to a new file.
 
+
+Example usage instructions
+--------------------------
+
+# (1) Get input classes from input file
+input_class_list = get_input_models_in_class('Eco1C1G1T1.input.json')
+
+# (2) Get repressor(gate) classes from UCF file
+gate_class_list = get_file_gate_models_in_class('Eco1C1G1T1.UCF.json')
+
+# (3) Perform optimization on inputs
+modified_input_class_list = compute_optimal_parameters(input_class_list, gate_class_list)
+
+# (4) Write modifications to new input file
+save_input_class_in_file(modifed_input_class_list,'Eco1C1G1T1.input.json','Eco1C1G1T1.NEWinput.json' )
+
 """
-
-
-#%%
 
 import json
 import copy
@@ -23,7 +35,6 @@ import os
 
 import pandas as pd
 import numpy as np
-#%%
 
 class Repressor:
     """

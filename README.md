@@ -15,7 +15,7 @@ Outputs:
 
 # Installing
 
-If they are not already install, install the [celloapi2](https://github.com/CIDARLAB/celloapi2) and [NumPy](https://numpy.org/) packages.
+If they are not already install, install the [celloapi2](https://github.com/CIDARLAB/celloapi2) and [NumPy](https://numpy.org/) modules.
 To install, simply clone the repository to your directory of choice. 
 
 # Running

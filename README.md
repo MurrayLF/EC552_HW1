@@ -13,4 +13,4 @@ Outputs:
 2. *.UCF.json : The modified UCF file.
 
 
-If they are not already install, install the pandas and NumPy packages for python.
+If they are not already install, install the celloapi2 and NumPy packages for python.

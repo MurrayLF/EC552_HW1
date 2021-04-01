@@ -10,9 +10,16 @@ Inputs:
 
 Outputs:
 1. The Score : The new score of the circuit
-2. *.UCF.json : The modified UCF file.
+2. The Delta : Difference between the new and old scores of the circuit
+3. .NEWinput.json : The modified input file.
 
+# Installing
 
 If they are not already install, install the [celloapi2](https://github.com/CIDARLAB/celloapi2) and [NumPy](https://numpy.org/) packages
+Clone the repository to your directory of choice. 
 
-
+# Running
+To run the program, simply run main.py from the command line.
+If you are using a chassis other than Eco1C1G1T1, modify the *chassis_name* variable in main.py.
+If the circuit requires other than 2 inputs, set *signal_input* equal to the number of inputs to the circuit.
+The output score and delta values will be printed to the command line; the .NEWinput.json file will save to the input file.

@@ -24,4 +24,5 @@ If you are using a chassis other than Eco1C1G1T1, modify the *chassis_name* vari
 If the circuit requires other than 2 inputs, set *signal_input* equal to the number of inputs to the circuit.
 
 Make sure that there are folders named output and input, which contains the 4 input files listed above in the Inputs section.
+Detailed output returned from Cello will be stored in the output folder.
 The output score and delta values will be printed to the command line; the .NEWinput.json file will save to the input file.

@@ -21,7 +21,7 @@ output_device_file = f'{chassis_name}.output.json'
 #Determine best score for unmodified input for calculation of delta
 eval=True
 if eval:
-    del_best_score
+    del_best_score = 0
     
     qdel= CelloQuery(
         input_directory=in_dir,
@@ -47,14 +47,17 @@ if eval:
         qdel.reset_input_signals()
 
     qdel.get_results()
-    delres = CelloResults(result_dir=out_dir)
+    delres = CelloResult(results_dir=out_dir)
 
 #Perform calculations and modify input file
-input_class_list = get_input_models_in_class(input_sensor_file)
-gate_class_list = get_file_gate_models_in_class(in_ucf)
+input_file_path = os.path.join(in_dir, input_sensor_file)
+ucf_file_path = os.path.join(in_dir, in_ucf)
+input_class_list = get_input_models_in_class(os.path.join(in_dir, input_sensor_file))
+gate_class_list = get_file_gate_models_in_class(ucf_file_path)
 modified_input_class_list = compute_optimal_parameters(input_class_list,gate_class_list)
 NEWinput_sensor_file = f'{chassis_name}.NEWinput.json'
-save_input_class_in_file(modified_input_calss_list,input_sensor_file,NEWinput_sensor_file)
+NEWinput_sensor_file_path = os.path.join(in_dir, NEWinput_sensor_file)
+save_input_class_in_file(modified_input_class_list,input_file_path,NEWinput_sensor_file_path)
 
 #Calculate best score for modified input
 best_score=0

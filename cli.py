@@ -70,34 +70,40 @@ def print_rm_help():
     print("Please be sure that *.input.json, *.UCF.json, *.output.json, options.csv, and the specified verilog file are in your cello input directory")
 
 def main():
+    # Number of cmd args
     n = len(sys.argv)
     if n == 1:
         print("Not enough arguments supplied. Use 'python cli.py -h' for usage help")
         return
     if n > 1: 
+        # Help option
         if sys.argv[1] == '-h':
                 print_help_menu()
                 return
+        # Modify input file
         elif sys.argv[1] == '-m':
             if (n-2) != 3:
                 print_m_help()
                 return
             else:
+                
+                # Parse cmdline args for file names/chassis name
                 chassis_name = sys.argv[4]
+                
                 in_dir = os.path.join(os.getcwd(), 'input')
-
                 input_file_path = os.path.join(in_dir, sys.argv[sys.argv.index("-m")+1])
                 ucf_file_path = os.path.join(in_dir, f'{chassis_name}.UCF.json')
                 
                 input_class_list = get_input_models_in_class(input_file_path)
                 gate_class_list = get_file_gate_models_in_class(ucf_file_path)
-                
+                # Run optimization
                 modified_input_class_list = compute_optimal_parameters(input_class_list,gate_class_list)
-                
+                # Save optimized file
                 NEWinput_sensor_file = sys.argv[sys.argv.index("-m")+2]
                 NEWinput_sensor_file_path = os.path.join(in_dir, NEWinput_sensor_file)
                 save_input_class_in_file(modified_input_class_list,input_file_path,NEWinput_sensor_file_path)
                 return
+        # Run cello with set input file
         elif sys.argv[1] == "-r":
             if (n-2) != 4 :
                 print_r_help()
@@ -146,6 +152,7 @@ def main():
                 delres = CelloResult(results_dir=out_dir)
                 print("Best circuit score:", del_best_score)
                 return
+        # Modify input file, run cello, and compare baseline to modified runs
         elif sys.argv[1] == "-mr" or sys.argv[1] == "-rm":
             if (n-2) != 5:
                print_rm_help()
